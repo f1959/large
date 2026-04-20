@@ -54,9 +54,12 @@ So this setup is for **private testing and feedback first**, not guaranteed for 
 You need:
 1. A Supabase account
 2. A Supabase project
-3. Supabase CLI installed on your computer
 
-Install Supabase CLI (official docs):
+Supabase CLI is **optional**.
+- If you like terminal commands, use CLI.
+- If you prefer no terminal, use the Supabase web dashboard.
+
+Supabase CLI docs (optional):
 - https://supabase.com/docs/guides/cli
 
 ---
@@ -131,39 +134,47 @@ Example:
 
 ---
 
-## Step F — Login Supabase CLI
+## Step F — Choose deploy method (CLI or Web Dashboard)
 
-Run in terminal:
+You can choose either method:
+
+### Method 1: CLI (optional)
+
+1. Login:
 
 ```bash
 supabase login
 ```
 
-It will open browser auth.
-
----
-
-## Step G — Deploy the Edge Function
-
-From this project root folder, run:
+2. Deploy function from project root:
 
 ```bash
 supabase functions deploy relay
 ```
 
-Then set function secrets:
+3. Set function secrets:
 
 ```bash
 supabase secrets set SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 supabase secrets set SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 ```
 
+### Method 2: Supabase Web Dashboard (no CLI)
+
+1. In your Supabase project, open **Edge Functions**.
+2. Create a function named `relay`.
+3. Paste the code from `supabase/functions/relay/index.ts`.
+4. Deploy/publish the function in the dashboard.
+5. In project settings for Edge Function secrets/environment variables, add:
+   - `SUPABASE_URL` = your project URL
+   - `SUPABASE_ANON_KEY` = your anon key
+
 Why secrets?
 - The function needs these env vars server-side.
 
 ---
 
-## Step H — Host the static frontend files
+## Step G — Host the static frontend files
 
 Host these files on any static host:
 - `index.html`
