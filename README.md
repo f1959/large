@@ -1,136 +1,244 @@
-# Private File Relay (Supabase Edge Function)
+# Private File Relay (Beginner-Friendly Guide)
 
-Minimal private web app for this exact relay path:
+This is a very small private web app.
+It relays file downloads like this:
 
-`External file URL -> Supabase Edge Function -> your browser`
+**External URL -> Supabase Edge Function -> Your browser**
 
-## Why this stack
+You log in with **one account only**:
+- `admin@f1959.com`
 
-- **Frontend:** plain static HTML/CSS/JS (minimal UI)
-- **Auth:** Supabase Auth (single user: `admin@f1959.com`)
-- **Relay backend:** Supabase Edge Function with authenticated stream relay
+No password is stored in code.
 
-### Why Supabase Storage is not used
+---
 
-This design intentionally avoids Supabase Storage in the relay path so files are not persisted as application data. The Edge Function fetches upstream and streams the response body through immediately.
+## 1) What this app does (plain English)
 
-### Why Edge Function streaming is used
+After login, you paste a file URL (example: `https://example.com/file.zip`) and click **Download**.
 
-The Edge Function is the authenticated choke point where we can:
-- require a valid JWT
-- verify user email is exactly `admin@f1959.com`
-- validate URL input and protocol
-- set basic timeout and relay headers
+The app does this:
+1. Sends your URL to your Supabase Edge Function.
+2. Edge Function checks you are authenticated.
+3. Edge Function confirms your user email is exactly `admin@f1959.com`.
+4. Edge Function fetches the file and streams it back to your browser.
 
-## Honest limitations on Supabase Free
+It does **not** use Supabase Storage for this relay path.
+It does **not** permanently store files.
 
-This setup is for **experimentation/feedback first**, not robust large-scale transfer infrastructure:
+---
 
-- Long-running or very large file relays can fail due to function/runtime limits.
-- Slow upstream servers may hit timeout/runtime ceilings.
-- Browser-side download handling may still use memory depending on browser behavior.
-- No resumable-download logic is implemented.
+## 2) Important limits (Supabase Free plan)
 
-## Project structure
+Please be aware:
+- Large files can fail.
+- Very slow websites can time out.
+- Long transfers may stop due to Edge runtime limits.
 
+So this setup is for **private testing and feedback first**, not guaranteed for huge files.
+
+---
+
+## 3) Project files
+
+- `index.html` – page structure
+- `styles.css` – minimal styling
+- `app.js` – login/session/download logic
+- `config.example.js` – template for frontend keys
+- `supabase/functions/relay/index.ts` – secure relay function
+- `supabase/config.toml` – function config (`verify_jwt = true`)
+
+---
+
+## 4) Prerequisites
+
+You need:
+1. A Supabase account
+2. A Supabase project
+3. Supabase CLI installed on your computer
+
+Install Supabase CLI (official docs):
+- https://supabase.com/docs/guides/cli
+
+---
+
+## 5) Step-by-step setup (very explicit)
+
+## Step A — Create Supabase project
+
+1. Go to https://supabase.com/dashboard
+2. Click **New project**
+3. Wait until the project is fully ready
+
+---
+
+## Step B — Manually create your admin user
+
+You asked to create this manually in Supabase Auth.
+
+1. In Supabase dashboard, open your project
+2. Go to **Authentication -> Users**
+3. Click **Add user**
+4. Enter email: `admin@f1959.com`
+5. Enter your password (choose and remember it)
+6. Save user
+7. Make sure this user is confirmed/active
+
+Do not add signup flow in the app.
+
+---
+
+## Step C — Get project URL and anon key
+
+In Supabase dashboard:
+1. Go to **Project Settings -> API**
+2. Copy:
+   - **Project URL** (looks like `https://xxxxx.supabase.co`)
+   - **anon public key**
+
+---
+
+## Step D — Create local frontend config file
+
+In this project folder:
+
+1. Copy `config.example.js` to `config.js`
+2. Edit `config.js` and paste your real values
+
+Example:
+
+```js
+window.__SUPABASE_URL__ = "https://YOUR_PROJECT_REF.supabase.co";
+window.__SUPABASE_ANON_KEY__ = "YOUR_SUPABASE_ANON_KEY";
 ```
-.
-├── index.html
-├── styles.css
-├── app.js
-├── config.example.js
-├── supabase/
-│   ├── config.toml
-│   └── functions/
-│       └── relay/
-│           └── index.ts
-└── README.md
+
+`config.js` is ignored by git (`.gitignore`) so your key is not committed.
+
+---
+
+## Step E — Set your project id in Supabase config
+
+Open `supabase/config.toml` and replace:
+
+```toml
+project_id = "your-project-ref"
 ```
 
-## Environment variables
+with your real project ref (the part before `.supabase.co`).
 
-### Frontend (`config.js`)
-Copy `config.example.js` to `config.js` and fill:
+Example:
+- URL: `https://abcxyz123.supabase.co`
+- project ref: `abcxyz123`
 
-- `window.__SUPABASE_URL__` = `https://<project-ref>.supabase.co`
-- `window.__SUPABASE_ANON_KEY__` = your Supabase anon key
+---
 
-### Edge Function secrets
-Set function secrets in Supabase:
+## Step F — Login Supabase CLI
 
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
+Run in terminal:
 
-> No password is stored in code.
+```bash
+supabase login
+```
 
-## Setup steps
+It will open browser auth.
 
-1. Create a Supabase project.
-2. In `Authentication -> Settings`, keep email/password auth enabled.
-3. Copy `config.example.js` to `config.js` and insert project URL + anon key.
-4. Configure `supabase/config.toml` project id.
-5. Deploy the edge function (see deployment section).
-6. Host static files (`index.html`, `styles.css`, `app.js`, `config.js`) on any private static host.
+---
 
-## Exact steps: manually create `admin@f1959.com` in Supabase Auth
+## Step G — Deploy the Edge Function
 
-1. Open Supabase dashboard.
-2. Go to **Authentication -> Users**.
-3. Click **Add user**.
-4. Enter email: `admin@f1959.com`.
-5. Set password manually.
-6. Ensure user is confirmed/active (if confirmation is required in your project settings).
-7. Do **not** create other production users for this private app.
-
-## Deploy instructions
-
-### Deploy Edge Function
-
-Install and login to Supabase CLI, then from project root:
+From this project root folder, run:
 
 ```bash
 supabase functions deploy relay
-supabase secrets set SUPABASE_URL=https://<project-ref>.supabase.co
-supabase secrets set SUPABASE_ANON_KEY=<your-anon-key>
 ```
 
-`verify_jwt = true` is set in `supabase/config.toml` for `relay`.
+Then set function secrets:
 
-### Deploy static frontend
+```bash
+supabase secrets set SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+supabase secrets set SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+```
 
-Deploy these files to a static host:
+Why secrets?
+- The function needs these env vars server-side.
+
+---
+
+## Step H — Host the static frontend files
+
+Host these files on any static host:
 - `index.html`
 - `styles.css`
 - `app.js`
 - `config.js`
 
-Examples: Cloudflare Pages, Netlify, Vercel static, GitHub Pages (if private access is handled externally).
+Simple options:
+- Netlify
+- Vercel (static)
+- Cloudflare Pages
+- Any basic web server
 
-## UX behavior
+---
 
-- First load:
-  - no session => password-only login screen
-  - valid session for admin => URL + Download + Logout
-- Login uses fixed email `admin@f1959.com` and typed password only.
-- Download posts URL to authenticated relay function.
-- Logout signs out and returns to password-only screen.
+## 6) How to use the app
 
-## Security notes
+1. Open your deployed frontend URL
+2. You will see password-only login screen
+   - fixed email: `admin@f1959.com`
+3. Type password and click **Login**
+4. Paste file URL (must start with `http://` or `https://`)
+5. Click **Download**
+6. Click **Logout** when done
 
-Current protections:
-- JWT required at relay endpoint.
-- User validated via Supabase Auth inside function.
-- Only `admin@f1959.com` allowed.
-- URL required, parsed, and restricted to `http/https`.
-- Upstream timeout enforced.
+After logout, you return to password-only screen.
 
-Future hardening to add (commented in code):
-- strict allowlist/blocklist for hostnames/IP ranges (SSRF hardening)
-- optional size limits/content-type restrictions
+---
 
-## Likely failure cases under Supabase Free
+## 7) Security behavior included
 
-- Large files may fail mid-transfer.
-- Slow upstream sources may time out.
-- Edge runtime constraints can terminate prolonged streams.
-- Some upstream servers may block relay traffic, return anti-bot pages, or require custom headers.
+The relay function currently enforces:
+- valid bearer token required
+- Supabase user must be authenticated
+- user email must equal `admin@f1959.com`
+- URL cannot be empty
+- URL must be valid format
+- URL protocol must be `http` or `https`
+- upstream timeout is applied
+
+Also included in code as future hardening note:
+- add hostname/IP allowlist or blocklist to reduce SSRF risk
+
+---
+
+## 8) Common errors and what they mean
+
+- **"Missing SUPABASE_URL or SUPABASE_ANON_KEY"**
+  - `config.js` is missing or values not filled
+
+- **"Invalid auth token" / 401**
+  - not logged in, expired session, or wrong token
+
+- **"Only admin user is allowed" / 403**
+  - logged in as a different email
+
+- **"Malformed URL"**
+  - pasted URL is not valid
+
+- **"Only http and https URLs are allowed"**
+  - URL used another protocol
+
+- **"Upstream timeout"**
+  - target site was too slow
+
+- **"Upstream failed (xxx)"**
+  - remote website returned non-200 status
+
+---
+
+## 9) Architecture summary (quick)
+
+- Frontend uses Supabase Auth session.
+- Frontend sends URL to Edge Function with bearer token.
+- Edge Function validates auth + admin email.
+- Edge Function fetches upstream file and streams back to browser.
+- No Supabase Storage in relay path.
+
