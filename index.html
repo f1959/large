@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Private File Relay</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Private File Relay</h1>
+
+      <section id="login-view" class="card hidden" aria-live="polite">
+        <p>Email: <strong>admin@f1959.com</strong></p>
+        <form id="login-form">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required autocomplete="current-password" />
+          <button type="submit">Login</button>
+        </form>
+      </section>
+
+      <section id="app-view" class="card hidden" aria-live="polite">
+        <form id="download-form">
+          <label for="file-url">File URL (http/https)</label>
+          <input id="file-url" name="url" type="url" placeholder="https://example.com/file.zip" required />
+          <button type="submit">Download</button>
+        </form>
+        <button id="logout-btn" type="button">Logout</button>
+      </section>
+
+      <p id="status" role="status" aria-live="polite"></p>
+    </main>
+
+    <script src="./config.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
