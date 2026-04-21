@@ -157,6 +157,7 @@ supabase functions deploy bright-task
 ```bash
 supabase secrets set SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 supabase secrets set SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+supabase secrets set ALLOWED_ORIGIN=https://YOUR_FRONTEND_ORIGIN
 ```
 
 ### Method 2: Supabase Web Dashboard (no CLI)
@@ -218,10 +219,12 @@ The relay function currently enforces:
 - URL cannot be empty
 - URL must be valid format
 - URL protocol must be `http` or `https`
+- blocks localhost/private-IP/metadata-style hosts (basic SSRF guard)
 - upstream timeout is applied
 
 Also included in code as future hardening note:
 - add hostname/IP allowlist or blocklist to reduce SSRF risk
+- `ALLOWED_ORIGIN` is optional; leaving it unset keeps current broad CORS behavior for easier setup
 
 ---
 
@@ -232,6 +235,12 @@ Also included in code as future hardening note:
 
 - **"Invalid auth token" / 401**
   - not logged in, expired session, or wrong token
+
+- **`/functions/v1/bright-task` 직접 열면 401 (Unauthorized)**
+  - 이건 보통 함수 코드가 아니라 Supabase 게이트웨이에서 먼저 막는 상태
+  - Edge Functions 설정에서 `bright-task`의 **Enforce JWT Verification**이 켜져 있으면, 브라우저 GET 테스트가 401 될 수 있음
+  - 이 프로젝트는 함수 내부에서 JWT를 직접 검증하므로 `verify_jwt = false`로 맞춰야 함
+  - 대시보드에서 토글 확인 후 반드시 재배포
 
 - **"Only admin user is allowed" / 403**
   - logged in as a different email
