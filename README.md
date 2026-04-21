@@ -44,8 +44,8 @@ So this setup is for **private testing and feedback first**, not guaranteed for 
 - `styles.css` – minimal styling
 - `app.js` – login/session/download logic
 - `config.example.js` – template for frontend keys
-- `supabase/functions/relay/index.ts` – secure relay function
-- `supabase/config.toml` – function config (`verify_jwt = false`, preflight CORS용)
+- `supabase/functions/bright-task/index.ts` – secure relay function
+- `supabase/config.toml` – function config (`verify_jwt = false`, preflight CORS용, bright-task)
 
 ---
 
@@ -149,7 +149,7 @@ supabase login
 2. Deploy function from project root:
 
 ```bash
-supabase functions deploy relay
+supabase functions deploy bright-task
 ```
 
 3. Set function secrets:
@@ -162,8 +162,8 @@ supabase secrets set SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 ### Method 2: Supabase Web Dashboard (no CLI)
 
 1. In your Supabase project, open **Edge Functions**.
-2. Create a function named `relay`.
-3. Paste the code from `supabase/functions/relay/index.ts`.
+2. Create a function named `bright-task`.
+3. Paste the code from `supabase/functions/bright-task/index.ts`.
 4. Deploy/publish the function in the dashboard.
 5. In project settings for Edge Function secrets/environment variables, add:
    - `SUPABASE_URL` = your project URL
@@ -173,7 +173,7 @@ Why secrets?
 - The function needs these env vars server-side.
 
 Important CORS note:
-- `supabase/config.toml` for relay should use `verify_jwt = false`.
+- `supabase/config.toml` for bright-task should use `verify_jwt = false`.
 - Reason: browser preflight `OPTIONS` request has no bearer token, so `verify_jwt = true` can be blocked before your code runs.
 - Security is still enforced in `index.ts` because POST manually validates bearer token + admin email.
 
@@ -241,9 +241,19 @@ Also included in code as future hardening note:
 
 - **"Download error: Failed to fetch"**
   - usually CORS/preflight failure between frontend and Edge Function
-  - check `supabase/config.toml` has `verify_jwt = false` for relay
+  - check `supabase/config.toml` has `verify_jwt = false` for bright-task
   - confirm Edge Function handles `OPTIONS` and returns CORS headers
   - redeploy function after code/config update
+
+- **Network 탭에 404 + CORS 에러가 같이 뜸**
+  - 이 경우는 대부분 CORS 코드 문제가 아니라 **함수 라우트 미배포/함수명 불일치** 문제
+  - 먼저 브라우저에서 아래 URL을 직접 열어 확인:
+    - `https://YOUR_PROJECT_REF.supabase.co/functions/v1/bright-task`
+    - 정상이라면 `{"ok":true,"function":"bright-task"}` 비슷한 JSON이 보여야 함
+  - 404면 아래를 확인:
+    1. Supabase Edge Functions에 함수 이름이 정확히 `bright-task`인지
+    2. 최신 코드로 재배포했는지
+    3. 현재 프로젝트 ref가 프런트 `SUPABASE_URL`과 같은 프로젝트인지
 
 - **"Only http and https URLs are allowed"**
   - URL used another protocol

@@ -1,4 +1,4 @@
 project_id = "yyydqthllavkybwyjqzb"
 
-[functions.relay]
+[functions.bright-task]
 verify_jwt = false

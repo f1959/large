@@ -116,7 +116,7 @@ downloadForm.addEventListener("submit", async (event) => {
   const accessToken = data.session.access_token;
 
   try {
-    const relayResponse = await fetch(`${supabaseUrl}/functions/v1/relay`, {
+    const relayResponse = await fetch(`${supabaseUrl}/functions/v1/bright-task`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
