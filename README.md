@@ -234,6 +234,11 @@ Also included in code as future hardening note:
 - **"Malformed URL"**
   - pasted URL is not valid
 
+- **"Download error: Failed to fetch"**
+  - usually CORS/preflight failure between frontend and Edge Function
+  - confirm Edge Function handles `OPTIONS` and returns CORS headers
+  - redeploy function after code update
+
 - **"Only http and https URLs are allowed"**
   - URL used another protocol
 

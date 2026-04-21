@@ -3,10 +3,18 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const ADMIN_EMAIL = "admin@f1959.com";
 const UPSTREAM_TIMEOUT_MS = 25000;
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, content-type, apikey, x-client-info",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Expose-Headers": "content-disposition, content-type",
+};
+
 function jsonError(status: number, error: string): Response {
   return new Response(JSON.stringify({ error }), {
     status,
     headers: {
+      ...CORS_HEADERS,
       "Content-Type": "application/json",
       "Cache-Control": "no-store",
     },
@@ -28,6 +36,11 @@ function sanitizeFilename(input: string): string {
 }
 
 Deno.serve(async (req) => {
+  // Browser preflight support for cross-origin authenticated fetch.
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { status: 200, headers: CORS_HEADERS });
+  }
+
   if (req.method !== "POST") {
     return jsonError(405, "Method not allowed");
   }
@@ -108,6 +121,7 @@ Deno.serve(async (req) => {
     return new Response(upstreamResponse.body, {
       status: 200,
       headers: {
+        ...CORS_HEADERS,
         "Content-Type": upstreamType,
         "Content-Disposition": contentDisposition,
         "Cache-Control": "no-store",
