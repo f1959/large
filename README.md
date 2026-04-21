@@ -45,7 +45,7 @@ So this setup is for **private testing and feedback first**, not guaranteed for 
 - `app.js` – login/session/download logic
 - `config.example.js` – template for frontend keys
 - `supabase/functions/relay/index.ts` – secure relay function
-- `supabase/config.toml` – function config (`verify_jwt = true`)
+- `supabase/config.toml` – function config (`verify_jwt = false`, preflight CORS용)
 
 ---
 
@@ -172,6 +172,11 @@ supabase secrets set SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 Why secrets?
 - The function needs these env vars server-side.
 
+Important CORS note:
+- `supabase/config.toml` for relay should use `verify_jwt = false`.
+- Reason: browser preflight `OPTIONS` request has no bearer token, so `verify_jwt = true` can be blocked before your code runs.
+- Security is still enforced in `index.ts` because POST manually validates bearer token + admin email.
+
 ---
 
 ## Step G — Host the static frontend files
@@ -236,8 +241,9 @@ Also included in code as future hardening note:
 
 - **"Download error: Failed to fetch"**
   - usually CORS/preflight failure between frontend and Edge Function
+  - check `supabase/config.toml` has `verify_jwt = false` for relay
   - confirm Edge Function handles `OPTIONS` and returns CORS headers
-  - redeploy function after code update
+  - redeploy function after code/config update
 
 - **"Only http and https URLs are allowed"**
   - URL used another protocol

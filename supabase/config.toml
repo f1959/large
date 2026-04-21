@@ -1,4 +1,4 @@
 project_id = "yyydqthllavkybwyjqzb"
 
 [functions.relay]
-verify_jwt = true
+verify_jwt = false
