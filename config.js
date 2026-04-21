@@ -1,0 +1,3 @@
+// Copy this file to config.js and fill values.
+window.__SUPABASE_URL__ = "https://yyydqthllavkybwyjqzb.supabase.co";
+window.__SUPABASE_ANON_KEY__ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5eWRxdGhsbGF2a3lid3lqcXpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjIxODAsImV4cCI6MjA5MjE5ODE4MH0.2sz5ZaMrXZ5qNnKnwidnS26LoorhcZFWUwt4WYHWUac";
